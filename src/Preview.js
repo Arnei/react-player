@@ -27,6 +27,9 @@ export default class Preview extends Component {
   }
 
   fetchImage ({ url, light, oEmbedUrl }) {
+    if (React.isValidElement(light)) {
+      return
+    }
     if (typeof light === 'string') {
       this.setState({ image: light })
       return
@@ -40,7 +43,7 @@ export default class Preview extends Component {
       .then(response => response.json())
       .then(data => {
         if (data.thumbnail_url && this.mounted) {
-          const image = data.thumbnail_url.replace('height=100', 'height=480')
+          const image = data.thumbnail_url.replace('height=100', 'height=480').replace('-d_295x166', '-d_640')
           this.setState({ image })
           cache[url] = image
         }
@@ -54,8 +57,9 @@ export default class Preview extends Component {
   }
 
   render () {
-    const { onClick, playIcon, previewTabIndex } = this.props
+    const { light, onClick, playIcon, previewTabIndex } = this.props
     const { image } = this.state
+    const isElement = React.isValidElement(light)
     const flexCenter = {
       display: 'flex',
       alignItems: 'center',
@@ -65,7 +69,7 @@ export default class Preview extends Component {
       preview: {
         width: '100%',
         height: '100%',
-        backgroundImage: image ? `url(${image})` : undefined,
+        backgroundImage: image && !isElement ? `url(${image})` : undefined,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         cursor: 'pointer',
@@ -76,6 +80,7 @@ export default class Preview extends Component {
         borderRadius: ICON_SIZE,
         width: ICON_SIZE,
         height: ICON_SIZE,
+        position: isElement ? 'absolute' : undefined,
         ...flexCenter
       },
       playIcon: {
@@ -98,6 +103,7 @@ export default class Preview extends Component {
         tabIndex={previewTabIndex}
         onKeyPress={this.handleKeyPress}
       >
+        {isElement ? light : null}
         {playIcon || defaultPlayIcon}
       </div>
     )

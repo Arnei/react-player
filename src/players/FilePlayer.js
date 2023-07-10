@@ -6,6 +6,7 @@ import { canPlay, AUDIO_EXTENSIONS, HLS_EXTENSIONS, DASH_EXTENSIONS, FLV_EXTENSI
 const HAS_NAVIGATOR = typeof navigator !== 'undefined'
 const IS_IPAD_PRO = HAS_NAVIGATOR && navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1
 const IS_IOS = HAS_NAVIGATOR && (/iPad|iPhone|iPod/.test(navigator.userAgent) || IS_IPAD_PRO) && !window.MSStream
+const IS_SAFARI = HAS_NAVIGATOR && (/^((?!chrome|android).)*safari/i.test(navigator.userAgent)) && !window.MSStream
 const HLS_SDK_URL = 'https://cdn.jsdelivr.net/npm/hls.js@VERSION/dist/hls.min.js'
 const HLS_GLOBAL = 'Hls'
 const DASH_SDK_URL = 'https://cdnjs.cloudflare.com/ajax/libs/dashjs/VERSION/dash.all.min.js'
@@ -23,7 +24,8 @@ export default class FilePlayer extends Component {
   componentDidMount () {
     this.props.onMount && this.props.onMount(this)
     this.addListeners(this.player)
-    if (IS_IOS) {
+    this.player.src = this.getSource(this.props.url) // Ensure src is set in strict mode
+    if (IS_IOS || this.props.config.forceDisableHls) {
       this.player.load()
     }
   }
@@ -43,6 +45,7 @@ export default class FilePlayer extends Component {
   }
 
   componentWillUnmount () {
+    this.player.src = ''
     this.removeListeners(this.player)
     if (this.hls) {
       this.hls.destroy()
@@ -135,10 +138,10 @@ export default class FilePlayer extends Component {
   }
 
   shouldUseHLS (url) {
-    if (this.props.config.forceHLS) {
+    if ((IS_SAFARI && this.props.config.forceSafariHLS) || this.props.config.forceHLS) {
       return true
     }
-    if (IS_IOS) {
+    if (IS_IOS || this.props.config.forceDisableHls) {
       return false
     }
     return HLS_EXTENSIONS.test(url) || MATCH_CLOUDFLARE_STREAM.test(url)
@@ -196,6 +199,9 @@ export default class FilePlayer extends Component {
       getSDK(FLV_SDK_URL.replace('VERSION', flvVersion), FLV_GLOBAL).then(flvjs => {
         this.flv = flvjs.createPlayer({ type: 'flv', url })
         this.flv.attachMediaElement(this.player)
+        this.flv.on(flvjs.Events.ERROR, (e, data) => {
+          this.props.onError(e, data, this.flv, flvjs)
+        })
         this.flv.load()
         this.props.onLoaded()
       })

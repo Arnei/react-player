@@ -6,6 +6,10 @@ import { canPlay } from '../patterns'
 const SDK_URL = 'https://player.vimeo.com/api/player.js'
 const SDK_GLOBAL = 'Vimeo'
 
+const cleanUrl = url => {
+  return url.replace('/manage/videos', '')
+}
+
 export default class Vimeo extends Component {
   static displayName = 'Vimeo'
   static canPlay = canPlay.vimeo
@@ -25,7 +29,7 @@ export default class Vimeo extends Component {
       if (!this.container) return
       const { playerOptions, title } = this.props.config
       this.player = new Vimeo.Player(this.container, {
-        url,
+        url: cleanUrl(url),
         autoplay: this.props.playing,
         muted: this.props.muted,
         loop: this.props.loop,
@@ -61,6 +65,7 @@ export default class Vimeo extends Component {
       })
       this.player.on('bufferstart', this.props.onBuffer)
       this.player.on('bufferend', this.props.onBufferEnd)
+      this.player.on('playbackratechange', e => this.props.onPlaybackRateChange(e.playbackRate))
     }, this.props.onError)
   }
 
@@ -93,6 +98,10 @@ export default class Vimeo extends Component {
     this.callPlayer('setVolume', fraction)
   }
 
+  setMuted (muted) {
+    this.callPlayer('setMuted', muted)
+  }
+
   setLoop (loop) {
     this.callPlayer('setLoop', loop)
   }
@@ -102,13 +111,11 @@ export default class Vimeo extends Component {
   }
 
   mute = () => {
-    this.setVolume(0)
+    this.setMuted(true)
   }
 
   unmute = () => {
-    if (this.props.volume !== null) {
-      this.setVolume(this.props.volume)
-    }
+    this.setMuted(false)
   }
 
   getDuration () {

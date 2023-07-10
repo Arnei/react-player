@@ -90,6 +90,10 @@ export default class Player extends Component {
   }
 
   handlePlayerMount = player => {
+    if (this.player) {
+      this.progress() // Ensure onProgress is still called in strict mode
+      return // Return here to prevent loading twice in strict mode
+    }
     this.player = player
     this.player.load(this.props.url)
     this.progress()
@@ -140,7 +144,7 @@ export default class Player extends Component {
     this.progressTimeout = setTimeout(this.progress, this.props.progressFrequency || this.props.progressInterval)
   }
 
-  seekTo (amount, type) {
+  seekTo (amount, type, keepPlaying = false) {
     // When seeking before player is ready, store value and seek later
     if (!this.isReady) {
       if (amount !== 0) {
@@ -157,10 +161,10 @@ export default class Player extends Component {
         console.warn('ReactPlayer: could not seek using fraction – duration not yet available')
         return
       }
-      this.player.seekTo(duration * amount)
+      this.player.seekTo(duration * amount, keepPlaying)
       return
     }
-    this.player.seekTo(amount)
+    this.player.seekTo(amount, keepPlaying)
   }
 
   handleReady = () => {
