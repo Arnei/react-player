@@ -1,5 +1,4 @@
 .github
-.travis.yml
 babel.config.js
 codecov.yml
 coverage
@@ -7,3 +6,7 @@ src
 test
 webpack/*
 yarn-error.log
+/demo/
+/examples/
+/disttest/
+/scripts/

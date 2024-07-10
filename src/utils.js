@@ -1,5 +1,14 @@
+import React from 'react'
 import loadScript from 'load-script'
 import merge from 'deepmerge'
+
+/**
+ * Dynamic import is supported in CJS modules but needs interop require default logic.
+ */
+export const lazy = (componentImportFn) => React.lazy(async () => {
+  const obj = await componentImportFn()
+  return typeof obj.default === 'function' ? obj : obj.default
+})
 
 const MATCH_START_QUERY = /[?&#](?:start|t)=([0-9hms]+)/
 const MATCH_END_QUERY = /[?&#]end=([0-9hms]+)/
@@ -74,7 +83,7 @@ function getGlobal (key) {
 // Util function to load an external SDK
 // or return the SDK if it is already loaded
 const requests = {}
-export function getSDK (url, sdkGlobal, sdkReady = null, isLoaded = () => true, fetchScript = loadScript) {
+export const getSDK = enableStubOn(function getSDK (url, sdkGlobal, sdkReady = null, isLoaded = () => true, fetchScript = loadScript) {
   const existingGlobal = getGlobal(sdkGlobal)
   if (existingGlobal && isLoaded(existingGlobal)) {
     return Promise.resolve(existingGlobal)
@@ -109,7 +118,7 @@ export function getSDK (url, sdkGlobal, sdkReady = null, isLoaded = () => true, 
       }
     })
   })
-}
+})
 
 export function getConfig (props, defaultProps) {
   return merge(defaultProps.config, props.config)
@@ -160,4 +169,15 @@ export function supportsWebKitPresentationMode (video = document.createElement('
   // iPhone safari appears to "support" PiP through the check, however PiP does not function
   const notMobile = /iPhone|iPod/.test(navigator.userAgent) === false
   return video.webkitSupportsPresentationMode && typeof video.webkitSetPresentationMode === 'function' && notMobile
+}
+
+// Workaround for being able to stub out functions in ESM exports.
+// https://github.com/evanw/esbuild/issues/412#issuecomment-723047255
+function enableStubOn (fn) {
+  if (globalThis.__TEST__) {
+    const wrap = (...args) => wrap.stub(...args)
+    wrap.stub = fn
+    return wrap
+  }
+  return fn
 }

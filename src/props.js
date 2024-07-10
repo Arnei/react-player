@@ -20,6 +20,7 @@ export const propTypes = {
   light: oneOfType([bool, string, object]),
   playIcon: node,
   previewTabIndex: number,
+  previewAriaLabel: string,
   fallback: node,
   oEmbedUrl: string,
   wrapper: oneOfType([
@@ -48,6 +49,10 @@ export const propTypes = {
     vimeo: shape({
       playerOptions: object,
       title: string
+    }),
+    mux: shape({
+      attributes: object,
+      version: string
     }),
     file: shape({
       attributes: object,
@@ -118,6 +123,7 @@ export const defaultProps = {
   fallback: null,
   wrapper: 'div',
   previewTabIndex: 0,
+  previewAriaLabel: '',
   oEmbedUrl: 'https://noembed.com/embed?url={url}',
   config: {
     soundcloud: {
@@ -162,6 +168,10 @@ export const defaultProps = {
         title: false
       },
       title: null
+    },
+    mux: {
+      attributes: {},
+      version: '2'
     },
     file: {
       attributes: {},

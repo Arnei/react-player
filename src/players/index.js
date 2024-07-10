@@ -1,5 +1,4 @@
-import { lazy } from 'react'
-import { supportsWebKitPresentationMode } from '../utils'
+import { lazy, supportsWebKitPresentationMode } from '../utils'
 import { canPlay, AUDIO_EXTENSIONS } from '../patterns'
 
 export default [
@@ -20,6 +19,12 @@ export default [
     name: 'Vimeo',
     canPlay: canPlay.vimeo,
     lazyPlayer: lazy(() => import(/* webpackChunkName: 'reactPlayerVimeo' */'./Vimeo'))
+  },
+  {
+    key: 'mux',
+    name: 'Mux',
+    canPlay: canPlay.mux,
+    lazyPlayer: lazy(() => import(/* webpackChunkName: 'reactPlayerMux' */'./Mux'))
   },
   {
     key: 'facebook',

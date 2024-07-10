@@ -24,7 +24,10 @@ export default class FilePlayer extends Component {
   componentDidMount () {
     this.props.onMount && this.props.onMount(this)
     this.addListeners(this.player)
-    this.player.src = this.getSource(this.props.url) // Ensure src is set in strict mode
+    const src = this.getSource(this.props.url) // Ensure src is set in strict mode
+    if (src) {
+      this.player.src = src
+    }
     if (IS_IOS || this.props.config.forceDisableHls) {
       this.player.load()
     }
@@ -38,14 +41,15 @@ export default class FilePlayer extends Component {
 
     if (
       this.props.url !== prevProps.url &&
-      !isMediaStream(this.props.url)
+      !isMediaStream(this.props.url) &&
+      !(this.props.url instanceof Array) // Avoid infinite loop
     ) {
       this.player.srcObject = null
     }
   }
 
   componentWillUnmount () {
-    this.player.src = ''
+    this.player.removeAttribute('src')
     this.removeListeners(this.player)
     if (this.hls) {
       this.hls.destroy()
@@ -240,8 +244,11 @@ export default class FilePlayer extends Component {
     }
   }
 
-  seekTo (seconds) {
+  seekTo (seconds, keepPlaying = true) {
     this.player.currentTime = seconds
+    if (!keepPlaying) {
+      this.pause()
+    }
   }
 
   setVolume (fraction) {

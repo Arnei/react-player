@@ -1,15 +1,8 @@
 import React, { Component } from 'react'
-import { findDOMNode } from 'react-dom'
-import { hot } from 'react-hot-loader'
 import screenfull from 'screenfull'
 
-import './reset.css'
-import './defaults.css'
-import './range.css'
-import './App.css'
-
-import { version } from '../../package.json'
-import ReactPlayer from '../index'
+import { version } from '../../../package.json'
+import ReactPlayer from '../../..'
 import Duration from './Duration'
 
 class App extends Component {
@@ -133,7 +126,7 @@ class App extends Component {
   }
 
   handleClickFullscreen = () => {
-    screenfull.request(findDOMNode(this.player))
+    screenfull.request(document.querySelector('.react-player'))
   }
 
   renderLoadButton = (url, label) => {
@@ -306,6 +299,13 @@ class App extends Component {
                 </td>
               </tr>
               <tr>
+                <th>Mux</th>
+                <td>
+                  {this.renderLoadButton('https://stream.mux.com/maVbJv2GSYNRgS02kPXOOGdJMWGU1mkA019ZUjYE7VU7k', 'Test A')}
+                  {this.renderLoadButton('https://stream.mux.com/Sc89iWAyNkhJ3P1rQ02nrEdCFTnfT01CZ2KmaEcxXfB008', 'Test B')}
+                </td>
+              </tr>
+              <tr>
                 <th>Twitch</th>
                 <td>
                   {this.renderLoadButton('https://www.twitch.tv/videos/106400740', 'Test A')}
@@ -435,4 +435,4 @@ class App extends Component {
   }
 }
 
-export default hot(module)(App)
+export default App
